@@ -17,10 +17,9 @@ use std::env;
 use std::fmt::Write as _;
 use std::io::{self, Write};
 use std::path::PathBuf;
-use std::string::ToString;
 use std::{fs, process};
 
-use glutin::event_loop::EventLoop as GlutinEventLoop;
+use glutin::event_loop::EventLoopBuilder as GlutinEventLoopBuilder;
 #[cfg(all(feature = "x11", not(any(target_os = "macos", windows))))]
 use glutin::platform::unix::EventLoopWindowTargetExtUnix;
 use log::info;
@@ -61,6 +60,10 @@ use crate::event::{Event, Processor};
 #[cfg(target_os = "macos")]
 use crate::macos::locale;
 
+// TODO refactor to use `ExitCode` when bumping minimum supported rust version to 1.61.
+pub const EXIT_FAILURE: i32 = 1;
+pub const EXIT_SUCCESS: i32 = 0;
+
 fn main() {
     #[cfg(windows)]
     panic::attach_handler();
@@ -78,7 +81,7 @@ fn main() {
 
     #[cfg(unix)]
     let result = match options.subcommands {
-        Some(Subcommands::Msg(options)) => msg(options),
+        Some(Subcommands::Msg(options)) => msg(options).map(|_| EXIT_SUCCESS),
         None => alacritty(options),
     };
 
@@ -86,10 +89,15 @@ fn main() {
     let result = alacritty(options);
 
     // Handle command failure.
-    if let Err(err) = result {
-        eprintln!("Error: {}", err);
-        process::exit(1);
-    }
+    let exit_code = match result {
+        Ok(code) => code,
+        Err(err) => {
+            eprintln!("Error: {}", err);
+            EXIT_FAILURE
+        },
+    };
+
+    process::exit(exit_code);
 }
 
 /// `msg` subcommand entrypoint.
@@ -128,9 +136,9 @@ impl Drop for TemporaryFiles {
 ///
 /// Creates a window, the terminal state, PTY, I/O event loop, input processor,
 /// config change monitor, and runs the main display loop.
-fn alacritty(options: Options) -> Result<(), String> {
+fn alacritty(options: Options) -> Result<i32, String> {
     // Setup glutin event loop.
-    let window_event_loop = GlutinEventLoop::<Event>::with_user_event();
+    let window_event_loop = GlutinEventLoopBuilder::<Event>::with_user_event().build();
 
     // Initialize the logger as soon as possible as to capture output from other subsystems.
     let log_file = logging::initialize(&options, window_event_loop.create_proxy())
@@ -190,16 +198,8 @@ fn alacritty(options: Options) -> Result<(), String> {
     let window_options = options.window_options.clone();
     let mut processor = Processor::new(config, options, &window_event_loop);
 
-    // Create the first Alacritty window.
-    let proxy = window_event_loop.create_proxy();
-    processor
-        .create_window(&window_event_loop, proxy, window_options)
-        .map_err(|err| err.to_string())?;
-
-    info!("Initialisation complete");
-
     // Start event loop and block until shutdown.
-    processor.run(window_event_loop);
+    let exit_code = processor.run(window_event_loop, window_options);
 
     // This explicit drop is needed for Windows, ConPTY backend. Otherwise a deadlock can occur.
     // The cause:
@@ -224,7 +224,8 @@ fn alacritty(options: Options) -> Result<(), String> {
     }
 
     info!("Goodbye");
-    Ok(())
+
+    Ok(exit_code)
 }
 
 fn log_config_path(config: &UiConfig) {

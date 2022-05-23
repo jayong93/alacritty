@@ -91,6 +91,7 @@ fn box_drawing(character: char, metrics: &Metrics, offset: &Delta<i8>) -> Raster
                 height: height as i32,
                 width: width as i32,
                 buffer,
+                advance: (width as i32, height as i32),
             };
         },
         _ => Canvas::new(width, height),
@@ -479,7 +480,16 @@ fn box_drawing(character: char, metrics: &Metrics, offset: &Delta<i8>) -> Raster
 
     let top = height as i32 + metrics.descent as i32;
     let buffer = BitmapBuffer::Rgb(canvas.into_raw());
-    RasterizedGlyph { character, top, left: 0, height: height as i32, width: width as i32, buffer }
+
+    RasterizedGlyph {
+        character,
+        top,
+        left: 0,
+        height: height as i32,
+        width: width as i32,
+        buffer,
+        advance: (width as i32, height as i32),
+    }
 }
 
 #[repr(packed)]

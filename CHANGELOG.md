@@ -20,12 +20,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Escape sequence to set underline color (`CSI 58 : 2 : Ps : Ps : Ps m`/`CSI 58 : 5 : Ps m`)
 - Escape sequence to reset underline color (`CSI 59 m`)
 - Vi mode keybinding (z) to center view around vi mode cursor
+- `window.decorations_theme_variant` to control both Wayland CSD and GTK theme variant on X11
 
 ### Changed
 
 - The `--help` output was reworked with a new colorful syntax
 - OSC 52 is now disabled on unfocused windows
 - `SpawnNewInstance` no longer inherits initial `--command`
+- Client side decorations should have proper text rendering now on Wayland
+- Config option `window.gtk_theme_variant`, you should use `window.decorations_theme_variant` instead
 
 ### Fixed
 
@@ -37,10 +40,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Vi cursor blinking not reset when navigating in search
 - Scrolling and middle-clicking modifying the primary selection
 - Bottom gap for certain builtin box drawing characters
-- Incorrect built-in glyphs for `U+2567` and `U+2568`
 - Character mappings in the DEC special graphics character set (line drawing)
 - Window flickering on resize on Wayland
+<<<<<<< HEAD
 - Unnecessary config reload when using `/dev/null` as a config file
+=======
+- Incorrect built-in glyphs for `U+2567` and `U+2568`
+- Cursor not hiding on GNOME Wayland
+- Font having different scale factor after monitor powering off/on on X11
+- Viewport not updating after opening a new tabbed window on macOS
+- Terminal not exiting sometimes after closing all windows on macOS
+- CPU usage spikes due to mouse movements for unfocused windows on X11
+- First window on macOS not tabbed with system prefer tabs setting
+>>>>>>> 2ae2aad3 (Bump winit to 0.27.0)
 
 ## 0.10.1
 
