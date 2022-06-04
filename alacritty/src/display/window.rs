@@ -234,6 +234,9 @@ impl Window {
         let current_mouse_cursor = CursorIcon::Text;
         windowed_context.window().set_cursor_icon(current_mouse_cursor);
 
+        // Enable IME.
+        windowed_context.window().set_ime_allowed(true);
+
         // Set OpenGL symbol loader. This call MUST be after window.make_current on windows.
         gl::load_with(|symbol| windowed_context.get_proc_address(symbol) as *const _);
 
@@ -463,6 +466,11 @@ impl Window {
         let nspot_y = f64::from(size.padding_y() + (point.line.0 + 1) as f32 * size.cell_height());
 
         self.window().set_ime_position(PhysicalPosition::new(nspot_x, nspot_y));
+    }
+
+    /// Enable or disable IME input for that window.
+    pub fn set_ime_allowed(&self, allowed: bool) {
+        self.window().set_ime_allowed(allowed);
     }
 
     pub fn swap_buffers(&self) {

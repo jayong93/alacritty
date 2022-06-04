@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Escape sequence to reset underline color (`CSI 59 m`)
 - Vi mode keybinding (z) to center view around vi mode cursor
 - `window.decorations_theme_variant` to control both Wayland CSD and GTK theme variant on X11
+- Support for inline input method
 
 ### Changed
 
@@ -29,6 +30,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `SpawnNewInstance` no longer inherits initial `--command`
 - Client side decorations should have proper text rendering now on Wayland
 - Config option `window.gtk_theme_variant`, you should use `window.decorations_theme_variant` instead
+- Search bar is now respecting cursor thickness
+- On X11 the IME popup window is stuck at the bottom of the window due to libX11 limitations
+- IME no longer works in Vi mode when moving around
 
 ### Fixed
 
