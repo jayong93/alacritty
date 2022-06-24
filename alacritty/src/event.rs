@@ -1168,7 +1168,7 @@ impl input::Processor<EventProxy, ActionContext<'_, Notifier, EventProxy>> {
                         Ime::Preedit(text, cursor_range) => {
                             // If've got empty preedit we should start processing ordinary keyboard
                             // input.
-                            if text.is_empty() && cursor_range.is_none() {
+                            if text.is_empty() && cursor_range.as_ref().map(|range| range == &(0, 0)).unwrap_or(true) {
                                 self.ctx.display.ime_input.clear_preedit()
                             } else {
                                 self.ctx.display.ime_input.set_preedit(text, cursor_range);
